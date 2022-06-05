@@ -19,6 +19,10 @@ pip3 install -r requirements.txt
 
 # Run unittests
 pytest
+
+# Run Coverage
+coverage run --source=pylox -m pytest
+coverage report -m
 ```
 
 ## Language Specification
