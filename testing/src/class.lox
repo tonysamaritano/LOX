@@ -1,0 +1,38 @@
+class Test
+{
+    init(name)
+    {
+        this.name = name;
+        this.member = 0;
+    }
+
+    name()
+    {
+        return this.name;
+    }
+};
+
+class Derived < Test
+{
+    init()
+    {
+        super.init("derived");
+    }
+
+    math(a, b)
+    {
+        if (a > b)
+        {
+            return a-b;
+        }
+        else
+        {
+            return a + b;
+        }
+    }
+
+    whatsup()
+    {
+        return "hello " + math(1, 2) + "\n";
+    }
+};
