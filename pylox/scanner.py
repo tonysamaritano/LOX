@@ -26,44 +26,43 @@ class Scanner:
     def __processLine(line: str, line_num: int) -> List[Token]:
         tokens = []
 
-        for expression in [e + ";" for e in line.rstrip().lstrip().split(";") if e]:
-            for idx, s in enumerate(expression.split("\"")):
-                # Strings end up being odd numbered because a line can never
-                # start with a string
-                if idx % 2 == 1:
-                    tokens.append(Token(TokenType.STRING, s, line_num))
-                else:
-                    for lexeme in re.split('(\\W)', s):
-                        if len(lexeme) == 0 or lexeme == ' ':
-                            continue
+        for idx, s in enumerate(line.rstrip().lstrip().split("\"")):
+            # Strings end up being odd numbered because a line can never
+            # start with a string
+            if idx % 2 == 1:
+                tokens.append(Token(TokenType.STRING, s, line_num))
+            else:
+                for lexeme in re.split('(\\W)', s):
+                    if len(lexeme) == 0 or lexeme == ' ':
+                        continue
 
-                        # First, search for keywords
-                        found, type = Scanner.__findKeywords(lexeme)
+                    # First, search for keywords
+                    found, type = Scanner.__findKeywords(lexeme)
+                    if found:
+                        tokens.append(Token(type, lexeme, line_num))
+                        continue
+
+                    # Look for characters
+                    if len(lexeme) == 1:
+                        found, type = Scanner.__findSingleCharacters(
+                            lexeme)
                         if found:
                             tokens.append(Token(type, lexeme, line_num))
                             continue
 
-                        # Look for characters
-                        if len(lexeme) == 1:
-                            found, type = Scanner.__findSingleCharacters(
-                                lexeme)
-                            if found:
-                                tokens.append(Token(type, lexeme, line_num))
-                                continue
-
-                        # Look for numbers
-                        if lexeme.isnumeric():
-                            tokens.append(
-                                Token(TokenType.NUMBER, lexeme, line_num))
-                            continue
-
-                        # Anything left is an identifier
-                        for t in TokenType:
-                            assert lexeme.find(t.value) < 0, \
-                                f"{t.value} found when there should only be identifiers"
-
+                    # Look for numbers
+                    if lexeme.isnumeric():
                         tokens.append(
-                            Token(TokenType.IDENTIFIER, lexeme, line_num))
+                            Token(TokenType.NUMBER, lexeme, line_num))
+                        continue
+
+                    # Anything left is an identifier
+                    for t in TokenType:
+                        assert lexeme.find(t.value) < 0, \
+                            f"{t.value} found when there should only be identifiers"
+
+                    tokens.append(
+                        Token(TokenType.IDENTIFIER, lexeme, line_num))
 
         return tokens
 
