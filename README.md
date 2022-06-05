@@ -1,5 +1,7 @@
 # Lox Langauge Project
 
+![workflow](https://github.com/tonysamaritano/lox/actions/workflows/pylox.yaml/badge.svg)
+
 The purpose of this project is to implement a basic programing langauge named "Lox" and write both an interpreter and compiler.
 
 This is based on the book, [Crafting Interpreters](http://craftinginterpreters.com/) by Robert Nystrom.
