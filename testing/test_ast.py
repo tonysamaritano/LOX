@@ -34,6 +34,18 @@ class BinaryOp(Expr):
         return f"{self._left} {self._op} {self._right}"
 
 
+class UnaryOp(Expr):
+    def __init__(self, left: Expr, op: TokenType, right: Expr, ) -> None:
+        self._left = left
+        self._op = op
+        self._right = right
+
+        super().__init__(self)
+
+    def __str__(self):
+        return f"{self._left} {self._op} {self._right}"
+
+
 class Parser:
     def __init__(self, tokens: List[Token]) -> None:
         self.__tokens = tokens
@@ -54,8 +66,13 @@ class Parser:
         """
         token = self.__current_token
         if token.type == TokenType.NUMBER:
-            self._consume(TokenType.NUMBER)
+            self._consume(token.type)
             return Constant(float(token.lexeme))
+        elif token.type == TokenType.LEFT_PAREN:
+            self._consume(token.type)
+            node = self._exp()
+            self._consume(TokenType.RIGHT_PAREN)
+            return node
 
     def _unary(self):
         """Unary detector
@@ -64,21 +81,27 @@ class Parser:
         node = self._primary()
 
         # while self.__current_token.type in (TokenType.EXCLAIMATION):
-        #     pass
+        #     if self.__current_token.type == TokenType.EXCLAIMATION:
+        #         self._consume(TokenType.EXCLAIMATION)
+
+        #         return Constant(float(token.lexeme))
 
         return node
 
     def _exp(self):
         """Highest level detector"""
-        
+
         # We make a call to then next highest level. It'll keep failing through
-        # until it knows what to do with the token and creates a node 
+        # until it knows what to do with the token and creates a node
         node = self._unary()
 
         while self.__current_token.type in (TokenType.PLUS, TokenType.MINUS):
             token = self.__current_token
             if token.type == TokenType.PLUS:
-                self._consume(TokenType.PLUS)
+                self._consume(token.type)
+                node = BinaryOp(left=node, op=token.type, right=self._unary())
+            elif token.type == TokenType.MINUS:
+                self._consume(token.type)
                 node = BinaryOp(left=node, op=token.type, right=self._unary())
 
         return node
@@ -89,7 +112,7 @@ class Parser:
 
 def test_asdf():
     filename = "/tmp/test.lox"
-    code = "1 + 2"
+    code = "1 + 2 - (3+5)"
 
     with open(filename, "w") as f:
         f.write(code)
@@ -100,4 +123,4 @@ def test_asdf():
 
     print(node)
 
-    assert False
+    # assert False
