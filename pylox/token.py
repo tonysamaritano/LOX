@@ -102,14 +102,14 @@ class TokenCharacters(Enum):
 
 class Token:
     def __init__(self, type: TokenType, lexeme: str, line: int):
-        self.__type = type
-        self.__lexeme = lexeme
-        self.__line = line
+        self.type = type
+        self.lexeme = lexeme
+        self.line = line
 
     def __str__(self) -> str:
-        return f"[{self.__line}] {self.__lexeme} -> {self.__type}"
+        return f"[{self.line}] {self.lexeme} -> {self.type}"
 
     def __eq__(self, obj):
-        return self.__type == obj.__type \
-            and self.__lexeme == obj.__lexeme \
-            and self.__line == obj.__line
+        return self.type == obj.type \
+            and self.lexeme == obj.lexeme \
+            and self.line == obj.line

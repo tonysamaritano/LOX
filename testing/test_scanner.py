@@ -14,7 +14,8 @@ def test_scanner_0():
     expected = [
         Token(TokenType.PRINT, "print", 0),
         Token(TokenType.STRING, "Hello World", 0),
-        Token(TokenType.SEMICOLON, ";", 0)
+        Token(TokenType.SEMICOLON, ";", 0),
+        Token(TokenType.EOF, "", 0)
     ]
 
     scanner = Scanner(filename)
@@ -31,7 +32,8 @@ def test_scanner_1():
     expected = [
         Token(TokenType.PRINT, "print", 0),
         Token(TokenType.STRING, "cake==awesome or a+b=10", 0),
-        Token(TokenType.SEMICOLON, ";", 0)
+        Token(TokenType.SEMICOLON, ";", 0),
+        Token(TokenType.EOF, "", 0)
     ]
 
     scanner = Scanner(filename)
@@ -52,6 +54,7 @@ def test_scanner_2():
         Token(TokenType.PRINT, "print", 1),
         Token(TokenType.STRING, "hellloooooo", 1),
         Token(TokenType.SEMICOLON, ";", 1),
+        Token(TokenType.EOF, "", 1)
     ]
 
     scanner = Scanner(filename)
@@ -81,6 +84,7 @@ def test_scanner_3():
         Token(TokenType.PLUS, "+", 1),
         Token(TokenType.IDENTIFIER, "c", 1),
         Token(TokenType.SEMICOLON, ";", 1),
+        Token(TokenType.EOF, "", 1)
     ]
 
     scanner = Scanner(filename)
@@ -127,6 +131,7 @@ def test_scanner_4():
         Token(TokenType.SLASH, "/", 0),
         Token(TokenType.NUMBER, "5", 0),
         Token(TokenType.SEMICOLON, ";", 0),
+        Token(TokenType.EOF, "", 0)
     ]
 
     scanner = Scanner(filename)
@@ -237,6 +242,7 @@ def test_scanner_class_src():
         Token(TokenType.RIGHT_BRACE, "}", 36),
         Token(TokenType.RIGHT_BRACE, "}", 37),
         Token(TokenType.SEMICOLON, ";", 37),
+        Token(TokenType.EOF, "", 37)
     ]
 
     for idx, t in enumerate(scanner.getTokens()):

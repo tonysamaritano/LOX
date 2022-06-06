@@ -16,9 +16,13 @@ class Scanner:
         with open(self.__src) as f:
             lines = f.readlines()
 
+            last_line = 0
             for idx, line in enumerate(lines):
+                last_line = idx
                 tokens = Scanner.__processLine(line, idx)
                 self.__tokens += tokens
+
+        self.__tokens.append(Token(TokenType.EOF, "", last_line))
 
     def getTokens(self) -> List[Token]:
         return self.__tokens
