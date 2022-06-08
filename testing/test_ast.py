@@ -1,3 +1,4 @@
+from textwrap import indent
 from typing import List
 import pytest
 
@@ -11,10 +12,20 @@ https://ruslanspivak.com/lsbasi-part7/#:~:text=An%20abstract%20syntax%20tree%20(
 
 class Expr:
     def __init__(self, value) -> None:
-        self._value = value
+        self.value = value
 
     def __str__(self) -> str:
-        return f"Expr[{self._value}]"
+        return f"Expr[{self.value}]"
+
+    def print(self, level: int = 0, indent: int = 2):
+        if level > 20:
+            print("max recursion")
+            return
+
+        if issubclass(type(self.value), Expr):
+            self.value.print(level + 1, indent)
+        else:
+            print(f"{' ' * level * indent}{self.value}")
 
 
 class Constant(Expr):
@@ -36,11 +47,18 @@ class BinaryOp(Expr):
         super().__init__(self)
 
     def __str__(self):
-        return f"Bin[{self._left} {self._op} {self._right}]"
+        return f"Binary[{self._left} {self._op} {self._right}]"
+
+    def print(self, level: int = 0, indent: int = 2):
+        print(f"{' ' * level * indent}Binary[")
+        self._left.print(level+1, indent)
+        print(f"{' ' * level * indent}{' ' * indent}{self._op}")
+        self._right.print(level+1, indent)
+        print(f"{' ' * level * indent}]")
 
 
 class UnaryOp(Expr):
-    def __init__(self, op: TokenType, right: Expr, ) -> None:
+    def __init__(self, op: TokenType, right: Expr) -> None:
         self._op = op
         self._right = right
 
@@ -48,6 +66,12 @@ class UnaryOp(Expr):
 
     def __str__(self):
         return f"Unary[{self._op} {self._right}]"
+
+    def print(self, level: int = 0, indent: int = 2):
+        print(f"{' ' * level * indent}Unary[")
+        print(f"{' ' * level * indent}{' ' * indent}{self._op}")
+        self._right.print(level+1, indent)
+        print(f"{' ' * level * indent}]")
 
 
 class Parser:
@@ -213,6 +237,6 @@ def test_asdf():
     parser = Parser(scanner.getTokens())
     node = parser.walk()
 
-    print(node)
+    node.print(indent = 4)
 
     # assert False
