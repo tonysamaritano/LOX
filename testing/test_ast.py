@@ -204,11 +204,7 @@ class Parser:
 
 def test_asdf():
     filename = "/tmp/test.lox"
-    code = "5 < (1/4 + -2 - (3+5) * 6 * 7) > 10.0"
-
-    # TODO: This doesn't work - scanner isn't picking up '<=' or '=='
-    # code = "5 < (1/4 + -2 - (3+5) * 6 * 7) <= 10.0"
-    # code = "5 == 10"
+    code = "5 > (1/4 + -2 - (3+5) * 6 * 7) >= 10.0"
 
     with open(filename, "w") as f:
         f.write(code)

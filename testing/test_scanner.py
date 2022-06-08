@@ -247,3 +247,53 @@ def test_scanner_class_src():
 
     for idx, t in enumerate(scanner.getTokens()):
         assert expected[idx] == t, f"{expected[idx]} vs {t}"
+
+
+def test_scanner_double_token():
+    with open(filename, "w") as f:
+        src_content = 'var test = a == b;'
+        src_content += '\nvar test = a >= b;'
+        src_content += '\nvar test = a <= b;'
+        src_content += '\nvar test = a != b;'
+        f.write(src_content)
+
+    expected = [
+        Token(TokenType.VAR, "var", 0),
+        Token(TokenType.IDENTIFIER, "test", 0),
+        Token(TokenType.EQUAL, "=", 0),
+        Token(TokenType.IDENTIFIER, "a", 0),
+        Token(TokenType.EQUAL_EQUAL, "==", 0),
+        Token(TokenType.IDENTIFIER, "b", 0),
+        Token(TokenType.SEMICOLON, ";", 0),
+
+        Token(TokenType.VAR, "var", 1),
+        Token(TokenType.IDENTIFIER, "test", 1),
+        Token(TokenType.EQUAL, "=", 1),
+        Token(TokenType.IDENTIFIER, "a", 1),
+        Token(TokenType.GREATER_EQUAL, ">=", 1),
+        Token(TokenType.IDENTIFIER, "b", 1),
+        Token(TokenType.SEMICOLON, ";", 1),
+
+        Token(TokenType.VAR, "var", 2),
+        Token(TokenType.IDENTIFIER, "test", 2),
+        Token(TokenType.EQUAL, "=", 2),
+        Token(TokenType.IDENTIFIER, "a", 2),
+        Token(TokenType.LESS_EQUAL, "<=", 2),
+        Token(TokenType.IDENTIFIER, "b", 2),
+        Token(TokenType.SEMICOLON, ";", 2),
+
+        Token(TokenType.VAR, "var", 3),
+        Token(TokenType.IDENTIFIER, "test", 3),
+        Token(TokenType.EQUAL, "=", 3),
+        Token(TokenType.IDENTIFIER, "a", 3),
+        Token(TokenType.EXCLAIMATION_EQUAL, "!=", 3),
+        Token(TokenType.IDENTIFIER, "b", 3),
+        Token(TokenType.SEMICOLON, ";", 3),
+
+        Token(TokenType.EOF, "", 3)
+    ]
+
+    scanner = Scanner(filename)
+
+    for idx, t in enumerate(scanner.getTokens()):
+        assert expected[idx] == t, f"{expected[idx]} vs {t}"
