@@ -1,6 +1,6 @@
-from textwrap import indent
-from typing import List
 import pytest
+
+from typing import List
 
 from pylox.token import Token, TokenType
 from pylox.scanner import Scanner
@@ -144,16 +144,17 @@ class Parser:
         """Factor detector
         unary ( ( "*" | "/" ) unary ) *
         """
+        match = (
+            TokenType.STAR,
+            TokenType.SLASH
+        )
+
         node = self._unary()
 
-        while self.__current_token.type in (TokenType.STAR, TokenType.SLASH):
+        while self.__current_token.type in match:
             token = self.__current_token
-            if token.type == TokenType.STAR:
-                self._consume(token.type)
-                node = BinaryOp(node, TokenType.STAR, self._unary())
-            elif token.type == TokenType.SLASH:
-                self._consume(token.type)
-                node = BinaryOp(node, TokenType.SLASH, self._unary())
+            self._consume(token.type)
+            node = BinaryOp(node, token.type, self._unary())
 
         return node
 
@@ -161,16 +162,17 @@ class Parser:
         """Term detector
         factor ( ( "+" | "-" ) factor ) *
         """
+        match = (
+            TokenType.PLUS,
+            TokenType.MINUS
+        )
+
         node = self._factor()
 
-        while self.__current_token.type in (TokenType.PLUS, TokenType.MINUS):
+        while self.__current_token.type in match:
             token = self.__current_token
-            if token.type == TokenType.PLUS:
-                self._consume(token.type)
-                node = BinaryOp(node, TokenType.PLUS, self._factor())
-            elif token.type == TokenType.MINUS:
-                self._consume(token.type)
-                node = BinaryOp(node, TokenType.MINUS, self._factor())
+            self._consume(token.type)
+            node = BinaryOp(node, token.type, self._factor())
 
         return node
 
@@ -178,22 +180,19 @@ class Parser:
         """Comparison detector
         term ( ( ">" | "<" | ">=" | "<=" ) term ) *
         """
+        match = (
+            TokenType.GREATER_THAN,
+            TokenType.GREATER_EQUAL,
+            TokenType.LESS_THAN,
+            TokenType.LESS_EQUAL
+        )
+
         node = self._term()
 
-        while self.__current_token.type in (TokenType.GREATER_THAN, TokenType.GREATER_EQUAL, TokenType.LESS_THAN, TokenType.LESS_EQUAL):
+        while self.__current_token.type in match:
             token = self.__current_token
-            if token.type == TokenType.GREATER_THAN:
-                self._consume(token.type)
-                node = BinaryOp(node, TokenType.GREATER_THAN, self._term())
-            elif token.type == TokenType.GREATER_EQUAL:
-                self._consume(token.type)
-                node = BinaryOp(node, TokenType.GREATER_EQUAL, self._term())
-            elif token.type == TokenType.LESS_THAN:
-                self._consume(token.type)
-                node = BinaryOp(node, TokenType.LESS_THAN, self._term())
-            elif token.type == TokenType.LESS_EQUAL:
-                self._consume(token.type)
-                node = BinaryOp(node, TokenType.LESS_EQUAL, self._term())
+            self._consume(token.type)
+            node = BinaryOp(node, token.type, self._term())
 
         return node
 
@@ -202,17 +201,17 @@ class Parser:
         """Equality detector
         compare ( ( "!=" | "==" ) compare ) *
         """
+        match = (
+            TokenType.EQUAL_EQUAL,
+            TokenType.EXCLAIMATION_EQUAL
+        )
+
         node = self._compare()
 
-        while self.__current_token.type in (TokenType.EQUAL_EQUAL, TokenType.EXCLAIMATION_EQUAL):
+        while self.__current_token.type in match:
             token = self.__current_token
-            if token.type == TokenType.EQUAL_EQUAL:
-                self._consume(token.type)
-                node = BinaryOp(node, TokenType.EQUAL_EQUAL, self._compare())
-            elif token.type == TokenType.EXCLAIMATION_EQUAL:
-                self._consume(token.type)
-                node = BinaryOp(
-                    node, TokenType.EXCLAIMATION_EQUAL, self._compare())
+            self._consume(token.type)
+            node = BinaryOp(node, token.type, self._compare())
 
         return node
 
@@ -228,7 +227,10 @@ class Parser:
 
 def test_asdf():
     filename = "/tmp/test.lox"
-    code = "5 > (1/4 + -2 - (3+5) * 6 * 7) >= 10.0"
+    code = "5 > (1/4 + -2 - (3+5) * 6 * 7) >= 10 == 1"
+
+    # TODO: This fails because of the dot
+    # code = "1.0 + 2.0"
 
     with open(filename, "w") as f:
         f.write(code)
@@ -237,6 +239,6 @@ def test_asdf():
     parser = Parser(scanner.getTokens())
     node = parser.walk()
 
-    node.print(indent = 4)
+    node.print(indent=4)
 
     # assert False
