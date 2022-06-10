@@ -3,10 +3,6 @@ import pytest
 from pylox.scanner import Scanner
 from pylox.parser import Parser
 
-""" AST Experiment
-https://ruslanspivak.com/lsbasi-part7/#:~:text=An%20abstract%20syntax%20tree%20(AST,the%20operands%20of%20that%20operator.
-"""
-
 
 def test_expression():
     filename = "/tmp/test.lox"
