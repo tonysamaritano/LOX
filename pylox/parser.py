@@ -81,6 +81,7 @@ class Parser:
         self.__index = 0
         self.__current_token = self.__tokens[self.__index]
         self.__expressions = []
+        self.__expr = None
 
     def _consume(self, type: TokenType):
         """Consumes tokens as we identify valid expressions"""
@@ -125,9 +126,9 @@ class Parser:
         token = self.__current_token
         if token.type == TokenType.LEFT_PAREN:
             self._consume(token.type)
-            node = self._exp()
+            self.__expr = self._exp()
             self._consume(TokenType.RIGHT_PAREN)
-            return node
+            return self.__expr
         else:
             return self._primary()
 
@@ -155,14 +156,14 @@ class Parser:
             TokenType.SLASH
         )
 
-        node = self._unary()
+        self.__expr = self._unary()
 
         while self.__current_token.type in match:
             token = self.__current_token
             self._consume(token.type)
-            node = BinaryOp(node, token.type, self._unary())
+            self.__expr = BinaryOp(self.__expr, token.type, self._unary())
 
-        return node
+        return self.__expr
 
     def _term(self):
         """Term detector
@@ -173,14 +174,14 @@ class Parser:
             TokenType.MINUS
         )
 
-        node = self._factor()
+        self.__expr = self._factor()
 
         while self.__current_token.type in match:
             token = self.__current_token
             self._consume(token.type)
-            node = BinaryOp(node, token.type, self._factor())
+            self.__expr = BinaryOp(self.__expr, token.type, self._factor())
 
-        return node
+        return self.__expr
 
     def _compare(self):
         """Comparison detector
@@ -193,14 +194,14 @@ class Parser:
             TokenType.LESS_EQUAL
         )
 
-        node = self._term()
+        self.__expr = self._term()
 
         while self.__current_token.type in match:
             token = self.__current_token
             self._consume(token.type)
-            node = BinaryOp(node, token.type, self._term())
+            self.__expr = BinaryOp(self.__expr, token.type, self._term())
 
-        return node
+        return self.__expr
 
     def _equality(self):
         """Equality detector
@@ -211,14 +212,14 @@ class Parser:
             TokenType.EXCLAIMATION_EQUAL
         )
 
-        node = self._compare()
+        self.__expr = self._compare()
 
         while self.__current_token.type in match:
             token = self.__current_token
             self._consume(token.type)
-            node = BinaryOp(node, token.type, self._compare())
+            self.__expr = BinaryOp(self.__expr, token.type, self._compare())
 
-        return node
+        return self.__expr
 
     def _exp(self):
         """Highest level detector
@@ -228,9 +229,7 @@ class Parser:
 
     def parse(self) -> List[Expr]:
         while self.__current_token.type != TokenType.EOF:
-            expression = self._exp()
-    def walk(self):
-        return self._exp()
-            self.__expressions.append(expression)
+            self.__expr = self._exp()
+            self.__expressions.append(self.__expr)
 
         return self.__expressions
