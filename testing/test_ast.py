@@ -47,10 +47,10 @@ def test_multiple_expressions():
     code = """
     1.4 + 2; 3.1465-4; 5.2 * 6; 7/8.1;
     1==1;
-    2!=1;
+    2!=1==false;
     "test"=="test";
-    & # invalid expr @;
-    2.1234/3;
+    & # invalid expr @ for;
+    2.1234/-3 + nil;
     """
 
     with open(filename, "w") as f:
@@ -59,5 +59,8 @@ def test_multiple_expressions():
     scanner = Scanner(filename)
     parser = Parser(scanner.getTokens())
     nodes = parser.parse()
+
+    for node in nodes:
+        node.print()
 
     assert len(nodes) == 8
