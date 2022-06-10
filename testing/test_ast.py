@@ -17,39 +17,51 @@ def test_expression():
 
     scanner = Scanner(filename)
     parser = Parser(scanner.getTokens())
-    parser.parse()
-
-    # assert False
+    assert len(parser.parse()) == 1
 
 
 def test_invalid_primary():
     filename = "/tmp/test.lox"
-    code = '^ + 8'
+    code = '^ + 8;1 + 2'
 
     with open(filename, "w") as f:
         f.write(code)
 
     scanner = Scanner(filename)
-    parser = Parser(scanner.getTokens())
-
-    # This should fail
-    fail = False
-    try:
-        parser.parse()
-    except:
-        fail = True
-
-    assert fail
+    parser = Parser(scanner.getTokens(), filename)
+    assert len(parser.parse()) == 1
 
 
 def test_double():
     filename = "/tmp/test.lox"
-    code = '-1.1337 + 2.1337'
+    code = '-1.1337 + 2.1337; 1/0.4'
 
     with open(filename, "w") as f:
         f.write(code)
 
     scanner = Scanner(filename)
     parser = Parser(scanner.getTokens())
-    parser.parse()
+    assert len(parser.parse()) == 2
 
+
+def test_multiple_expressions():
+    filename = "/tmp/test.lox"
+
+    # 8 valid expressions, 1 invald
+    code = """
+    1.4 + 2; 3.1465-4; 5.2 * 6; 7/8.1;
+    1==1;
+    2!=1;
+    "test"=="test";
+    & # invalid expr @;
+    2.1234/3;
+    """
+
+    with open(filename, "w") as f:
+        f.write(code)
+
+    scanner = Scanner(filename)
+    parser = Parser(scanner.getTokens())
+    nodes = parser.parse()
+
+    assert len(nodes) == 8

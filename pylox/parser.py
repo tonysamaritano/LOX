@@ -1,8 +1,13 @@
-import pytest
+import os
+import sys
 
 from typing import List
 
 from pylox.token import Token, TokenType
+
+
+class ParseError(Exception):
+    pass
 
 
 class Expr:
@@ -76,12 +81,12 @@ class UnaryOp(Expr):
 
 
 class Parser:
-    def __init__(self, tokens: List[Token]) -> None:
+    def __init__(self, tokens: List[Token], filename: str = None) -> None:
         self.__tokens = tokens
         self.__index = 0
         self.__current_token = self.__tokens[self.__index]
         self.__expressions = []
-        self.__expr = None
+        self.__filename = filename
 
     def _consume(self, type: TokenType):
         """Consumes tokens as we identify valid expressions"""
@@ -116,7 +121,7 @@ class Parser:
             self._consume(token.type)
             return Nil()
         else:
-            raise Exception(f"Not a valid token {self.__current_token}")
+            raise ParseError(f"Not a valid token {self.__current_token}")
 
     def _grouping(self):
         """Grouping detector
@@ -126,9 +131,9 @@ class Parser:
         token = self.__current_token
         if token.type == TokenType.LEFT_PAREN:
             self._consume(token.type)
-            self.__expr = self._exp()
+            node = self._exp()
             self._consume(TokenType.RIGHT_PAREN)
-            return self.__expr
+            return node
         else:
             return self._primary()
 
@@ -156,14 +161,14 @@ class Parser:
             TokenType.SLASH
         )
 
-        self.__expr = self._unary()
+        node = self._unary()
 
         while self.__current_token.type in match:
             token = self.__current_token
             self._consume(token.type)
-            self.__expr = BinaryOp(self.__expr, token.type, self._unary())
+            node = BinaryOp(node, token.type, self._unary())
 
-        return self.__expr
+        return node
 
     def _term(self):
         """Term detector
@@ -174,14 +179,14 @@ class Parser:
             TokenType.MINUS
         )
 
-        self.__expr = self._factor()
+        node = self._factor()
 
         while self.__current_token.type in match:
             token = self.__current_token
             self._consume(token.type)
-            self.__expr = BinaryOp(self.__expr, token.type, self._factor())
+            node = BinaryOp(node, token.type, self._factor())
 
-        return self.__expr
+        return node
 
     def _compare(self):
         """Comparison detector
@@ -194,14 +199,14 @@ class Parser:
             TokenType.LESS_EQUAL
         )
 
-        self.__expr = self._term()
+        node = self._term()
 
         while self.__current_token.type in match:
             token = self.__current_token
             self._consume(token.type)
-            self.__expr = BinaryOp(self.__expr, token.type, self._term())
+            node = BinaryOp(node, token.type, self._term())
 
-        return self.__expr
+        return node
 
     def _equality(self):
         """Equality detector
@@ -212,14 +217,14 @@ class Parser:
             TokenType.EXCLAIMATION_EQUAL
         )
 
-        self.__expr = self._compare()
+        node = self._compare()
 
         while self.__current_token.type in match:
             token = self.__current_token
             self._consume(token.type)
-            self.__expr = BinaryOp(self.__expr, token.type, self._compare())
+            node = BinaryOp(node, token.type, self._compare())
 
-        return self.__expr
+        return node
 
     def _exp(self):
         """Highest level detector
@@ -228,8 +233,36 @@ class Parser:
         return self._equality()
 
     def parse(self) -> List[Expr]:
+        # Synchronization Symbols
+        synchronize = (
+            TokenType.CLASS,
+            TokenType.FOR,
+            # etc..
+        )
+
         while self.__current_token.type != TokenType.EOF:
-            self.__expr = self._exp()
-            self.__expressions.append(self.__expr)
+            try:
+                self.__expressions.append(self._exp())
+                self._consume(TokenType.SEMICOLON)
+            except ParseError:
+                # Print the error
+                file = os.path.basename(self.__filename) if self.__filename else self.__filename
+                line = self.__current_token.line
+                lexeme = self.__current_token.lexeme
+                fstr = f"{file}:{line}" if file else f"{line}"
+                print(
+                    f"\x1b[1;31mParseError at [{fstr}]:\x1b[0m error with '{lexeme}'",
+                    file=sys.stderr
+                )
+
+                # Synchronize
+                while self.__current_token.type != TokenType.EOF:
+                    self._consume(self.__current_token.type)
+
+                    if self.__current_token.type in synchronize:
+                        break
+                    elif self.__current_token.type == TokenType.SEMICOLON:
+                        self._consume(TokenType.SEMICOLON)
+                        break
 
         return self.__expressions
