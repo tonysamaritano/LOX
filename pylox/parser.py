@@ -80,6 +80,7 @@ class Parser:
         self.__tokens = tokens
         self.__index = 0
         self.__current_token = self.__tokens[self.__index]
+        self.__expressions = []
 
     def _consume(self, type: TokenType):
         """Consumes tokens as we identify valid expressions"""
@@ -89,12 +90,18 @@ class Parser:
 
     def _primary(self):
         """Primary detector
-        NUMBER | STRING | true | false | nil
+        (NUMBER "." NUMBER) | NUMBER | STRING | true | false | nil
         """
         token = self.__current_token
         if token.type == TokenType.NUMBER:
             self._consume(token.type)
-            return Constant(float(token.lexeme))
+            if self.__current_token.type == TokenType.DOT:
+                self._consume(TokenType.DOT)
+                decimal = self.__current_token
+                self._consume(TokenType.NUMBER)
+                return Constant(float(f"{token.lexeme}.{decimal.lexeme}"))
+            else:
+                return Constant(float(token.lexeme))
         elif token.type == TokenType.STRING:
             self._consume(token.type)
             return String(token.lexeme)
@@ -219,5 +226,11 @@ class Parser:
         """
         return self._equality()
 
+    def parse(self) -> List[Expr]:
+        while self.__current_token.type != TokenType.EOF:
+            expression = self._exp()
     def walk(self):
         return self._exp()
+            self.__expressions.append(expression)
+
+        return self.__expressions
